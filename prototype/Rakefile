@@ -1,0 +1,8 @@
+require_relative "iocheck"
+
+tester = IOCheck::Tester.new
+
+tester << "tree"
+tester << IOCheck::Unit.new( name="lstest", exe="ls", IOCheck::Judge.new )
+
+tester.ready
