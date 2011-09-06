@@ -1,4 +1,4 @@
-require_relative "iocheck"
+require "iocheck"
 
 tester = IOCheck::Tester.new
 

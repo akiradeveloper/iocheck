@@ -17,11 +17,13 @@ Jeweler::Tasks.new do |gem|
   gem.name = "iocheck"
   gem.homepage = "http://github.com/akiradeveloper/iocheck"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{IO-based testing framework.}
+  gem.description = %Q{Make refactoring for legacy softwares safe.}
   gem.email = "ruby.wktk@gmail.com"
   gem.authors = ["Akira Hayakawa"]
   # dependencies defined in Gemfile
+
+  gem.files = FileList["lib/**/*.rb"]
 end
 Jeweler::RubygemsDotOrgTasks.new
 
