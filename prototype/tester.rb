@@ -1,5 +1,3 @@
-# require_relative "test"
-
 module IOCheck
 
   Env = {}
@@ -34,17 +32,43 @@ module IOCheck
         run!
 	show
       end
+      create_lock_tasks
     end
 
-  private
+    def create_lock_tasks
+      locked = @tests.select { |t| t.locked? }
+      unlocked = @tests.select { |t| ! t.locked? }
+      dir = ::IOCheck::Env["dir"]
 
-    def show
-      # TODO: This is a temporal implementation.
-      @tests.each do |t|
-        t.show
+      namespace "iocheck" do
+        task "lock" => unlocked.map { |t| "iocheck:lock:#{t.name}" }
+        unlocked.each do  |t|
+	  namespace "lock" do
+	    task t.name do
+	      dest = dir + "/" + "lock"
+	      mv ::IOCheck.readfile(t.name), dest
+            end
+	  end
+        end
+	task "unlock" => locked.map { |t| "iocheck:unlock:#{t.name}" }
+	locked.each do |t|
+          namespace "unlock" do
+	    task t.name do
+	      dest = dir + "/" + "unlock"
+	      mv ::IOCheck.readfile(t.name), dest
+	    end
+	  end
+	end
       end
     end
 
+  private
+    def show
+      # TODO: This is a temporary implementation.
+      @tests.each do |t|
+        t.show
+      end
+      # TODO: Here, summary result should be written.
+    end
   end # end of class Tester
-
 end # end of module IOCheck

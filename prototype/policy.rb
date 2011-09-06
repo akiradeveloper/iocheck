@@ -1,7 +1,6 @@
 module IOCheck
 
   class Policy
-
     def initialize
       @result = nil
     end
@@ -9,7 +8,7 @@ module IOCheck
 
     # Expected -> Actual -> Either
     def evaluate(expected, actual)
-      raise "You must implement this method."
+      raise NoMethodError, "You must override this method."
     end
 
     def run!(expected, actual)
@@ -51,13 +50,12 @@ module IOCheck
     end
 
     def self.by_bytes
-      Block.new do |actual, expected|
+      Block.new do |expected, actual|
+        # TODO: Better to show the diff to the user.
         Either.new(
           actual.bytes == expected.bytes,
   	  "Bytes not exactly matched").evaluate
       end
     end
-
   end # end of class Policy
-
 end # end of module IOCheck 

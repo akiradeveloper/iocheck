@@ -2,8 +2,8 @@
 |-- Rakefile
 |-- iocheck
 |   |-- lock
-|   |   `-- dotslashmain
 |   `-- unlock
+|       |-- dotslashmain
 |       `-- tree
 |-- iocheck.rb
 |-- main

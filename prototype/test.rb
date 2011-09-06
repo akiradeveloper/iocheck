@@ -3,8 +3,8 @@ require_relative "tester"
 
 module IOCheck
 
-  def self.name(cmdname)
-    cn = cmdname.clone
+  def self.name(cmd)
+    cn = cmd.clone
     if cn.start_with?( "./" )
       cn[0..1] = "dotslash"
     end
@@ -40,14 +40,12 @@ module IOCheck
   end
 
   class Test
-
-    def initialize(cmdname)
-      @command = Command.new(cmdname)
+    def initialize(cmd)
+      @command = Command.new(cmd)
       @policies = [Policy.by_bytes]
       @repeat = 1
       @desc = ""
     end
-    attr_reader :com
 
     def repeat(n)
       @repeat = n
@@ -64,26 +62,21 @@ module IOCheck
       self
     end
 
-    def update!
-      # if the file is in lock dir, do nothing and return.
-      return if ::IOCheck.include?(name, "#{::IOCheck::Env["dir"]}/lock")
+    def name
+      ::IOCheck.name( @command.cmd )
+    end
 
-      # if not, the file for this test should be updated.
+    def locked?
+      true if ::IOCheck.include?(name, "#{::IOCheck::Env["dir"]}/lock")
+    end
+
+    def update!
+      return if locked?
+
       do_run!
-      filename = ::IOCheck.writefile(name)
-      f = File.open(filename, "w")
+      f = File.open( ::IOCheck.writefile(name), "w")
       f.write( @command.actual.bytes )
       f.close
-    end
-
-    def with_name(s)
-      @name = s
-      self
-    end
-  
-    def name
-      # puts "Test#name #{@command.cmdname}"
-      ::IOCheck.name( @command.cmdname )
     end
 
     def do_run!
@@ -93,7 +86,7 @@ module IOCheck
     def run!
       do_run!
       @policies.each do |p|
-        p.run!( @command.actual, expected )
+        p.run!( expected, @command.actual )
       end
     end
 
@@ -115,10 +108,11 @@ module IOCheck
 	  raise Error
         end
       end
-      puts "Testname : #{name}"
+      puts "Test Name     : #{name}"
+      puts "Description   : #{@desc}"
       puts "Minor Success : #{n_success}"
       puts "Minor Failure : #{n_failure}"
-      puts "Log ---"
+      puts "# Log --------:"
       puts log.join("\n")
     end
 
@@ -129,23 +123,20 @@ module IOCheck
     end
 
     class Command
-      def initialize(cmdname)
-        @cmdname = cmdname
-	# puts "Command init #{@cmdname}"
+      def initialize(cmd)
+        @cmd = cmd
         @actual = Actual.new
       end
-      attr_reader :cmdname, :actual
+      attr_reader :cmd, :actual
     
       def run!(repeat)
-        # puts "Command run! #{@cmdname}"
         repeat.times do 
-          @actual << Actual::Result.new( @cmdname )
+          @actual << Actual::Result.new( @cmd )
         end
         @actual.repeat  = repeat
       end
 
       class Actual
-  
         def initialize
           @results = []
         end
@@ -154,22 +145,20 @@ module IOCheck
         def <<(result)
 	  @results << result
         end
-  
         def bytes
+	  # TODO: assert all the results are equal in bytes?
 	  ::IOCheck.strip( @results[0].bytes )
         end
-
         class Result
-          def initialize(cmdname)
-	    # puts "Result init #{cmdname}"
-	    @cmdname = cmdname
+          def initialize(cmd)
+	    @cmd = cmd
 	    run!
           end
 	  attr_reader :bytes
         private  
 	  def run!
 	    # TODO: more things like measuring the time.
-	    x = `#{@cmdname}`
+	    x = `#{@cmd}`
 	    @bytes = ::IOCheck.strip( x )
 	  end
         end # end of class Result
@@ -177,24 +166,19 @@ module IOCheck
     end # end of class Command
 
     class Expected
-
       def initialize(test)
         @test = test
       end
-
       def repeat
         @test.repeat
       end
-      
       def bytes
         content = File.read( ::IOCheck.readfile(@test.name) )
         ::IOCheck.strip( content )
       end
-
     end # end of class Expected
 
     class RakeTask
-
       def initialize(test)
         @test = test
       end
@@ -205,8 +189,6 @@ module IOCheck
       def create_update_task
         namespace "iocheck" do
   	  namespace "update" do
-	    p @test.name
-	    p self
   	    task @test.name do
   	      @test.update!
             end
