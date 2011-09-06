@@ -1,9 +1,8 @@
 require_relative "iocheck"
 
-IOCheck::Env["dir"] = "."
 tester = IOCheck::Tester.new
 
 tester << IOCheck::Test.new("tree")
-# tester << IOCheck::Test.new("./main").repeat(10).name("prod of 1 to 10").describe("multiply 1 to 10")
+tester << IOCheck::Test.new("./main").repeat(10).with_name("prod of 1 to 10").describe("multiply 1 to 10")
 
 tester.ready

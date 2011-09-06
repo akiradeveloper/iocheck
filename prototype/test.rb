@@ -1,9 +1,14 @@
 require_relative "policy"
+require_relative "tester"
 
 module IOCheck
 
   def self.name(cmdname)
-    cmdname.split(" ").join("_")
+    cn = cmdname.clone
+    if cn.start_with?( "./" )
+      cn[0..1] = "dotslash"
+    end
+    cn.split(" ").join("_")
   end
 
   def self.strip(bytes)
@@ -17,12 +22,13 @@ module IOCheck
     elsif self.include?(name, "#{dir}/unlock")
       x = "#{dir}/unlock/#{name}"
     else
-      raise ArgumentError
+      raise ArgumentError, "readfile not found."
     end
     x
   end
 
   def self.writefile(name)
+    dir = ::IOCheck::Env["dir"]
     "#{dir}/unlock/#{name}"
   end
 
@@ -30,8 +36,7 @@ module IOCheck
     Dir.open(dir).each do |f|
       return true if f == name
     end   
-      return false
-    end
+    return false
   end
 
   class Test
@@ -42,6 +47,7 @@ module IOCheck
       @repeat = 1
       @desc = ""
     end
+    attr_reader :com
 
     def repeat(n)
       @repeat = n
@@ -63,24 +69,29 @@ module IOCheck
       return if ::IOCheck.include?(name, "#{::IOCheck::Env["dir"]}/lock")
 
       # if not, the file for this test should be updated.
-      @command.run!
-      bytes = @command.actual.bytes
+      do_run!
       filename = ::IOCheck.writefile(name)
-      f = File.open(filename)
-      f.write(bytes)
+      f = File.open(filename, "w")
+      f.write( @command.actual.bytes )
       f.close
+    end
+
+    def with_name(s)
+      @name = s
+      self
     end
   
     def name
+      # puts "Test#name #{@command.cmdname}"
       ::IOCheck.name( @command.cmdname )
     end
 
-    def taskname
-      "iocheck:" + name
+    def do_run!
+      @command.run!(@repeat)
     end
-  
+
     def run!
-      @command.run!
+      do_run!
       @policies.each do |p|
         p.run!( @command.actual, expected )
       end
@@ -91,14 +102,13 @@ module IOCheck
     end
   
     def show
-      puts "test.show"
       n_success = 0
       n_failure = 0
       log = []
       @policies.each do |p|
-        if p.result.class == Success
+        if p.result.class == ::IOCheck::Policy::Success
 	  n_success += 1
-	elsif p.result.class == Failure
+	elsif p.result.class == ::IOCheck::Policy::Failure
 	  n_failure += 1
 	  log << p.result.log
         else
@@ -108,7 +118,7 @@ module IOCheck
       puts "Testname : #{name}"
       puts "Minor Success : #{n_success}"
       puts "Minor Failure : #{n_failure}"
-      puts "Log"
+      puts "Log ---"
       puts log.join("\n")
     end
 
@@ -121,15 +131,17 @@ module IOCheck
     class Command
       def initialize(cmdname)
         @cmdname = cmdname
+	# puts "Command init #{@cmdname}"
         @actual = Actual.new
       end
       attr_reader :cmdname, :actual
     
-      def run!(time)
-        time.times do |t|
-          @actual << Actual::Result.new(@cmdname)
+      def run!(repeat)
+        # puts "Command run! #{@cmdname}"
+        repeat.times do 
+          @actual << Actual::Result.new( @cmdname )
         end
-        @actual.repeat  = time
+        @actual.repeat  = repeat
       end
 
       class Actual
@@ -149,12 +161,16 @@ module IOCheck
 
         class Result
           def initialize(cmdname)
+	    # puts "Result init #{cmdname}"
 	    @cmdname = cmdname
+	    run!
           end
 	  attr_reader :bytes
-          
+        private  
 	  def run!
-	    @bytes = ::IOCheck.strip(`#{@cmdname}`)
+	    # TODO: more things like measuring the time.
+	    x = `#{@cmdname}`
+	    @bytes = ::IOCheck.strip( x )
 	  end
         end # end of class Result
       end # end of class Actual
@@ -174,9 +190,11 @@ module IOCheck
         content = File.read( ::IOCheck.readfile(@test.name) )
         ::IOCheck.strip( content )
       end
+
     end # end of class Expected
 
     class RakeTask
+
       def initialize(test)
         @test = test
       end
@@ -186,15 +204,30 @@ module IOCheck
       end
       def create_update_task
         namespace "iocheck" do
-	  test.update!
+  	  namespace "update" do
+	    p @test.name
+	    p self
+  	    task @test.name do
+  	      @test.update!
+            end
+  	  end
 	end
       end
-      def craete_run_task
+      def create_run_task
         namespace "iocheck" do
-	  test.run!
-	  test.show
+	  task @test.name do
+	    @test.run!
+	    @test.show
+	  end
 	end
       end
     end # end of class RakeTask
   end # end of class Test
 end # end of module IOCheck
+
+if __FILE__ == $0
+  p ::IOCheck.name("tree")
+  p ::IOCheck.writefile("tree")
+  p ::IOCheck.readfile("tree")
+  p ::IOCheck.strip("\n aa bbb\n  ccff \n ")
+end

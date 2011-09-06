@@ -1,10 +1,10 @@
-require "test"
+# require_relative "test"
 
 module IOCheck
 
   Env = {}
-  Env["dir"] = "./iocheck"
-
+  ::IOCheck::Env["dir"] = "./iocheck"
+  
   class Tester
   
     def initialize
@@ -13,7 +13,6 @@ module IOCheck
     
     def <<(test)
       @tests << test
-      test.tester = self
     end
   
     def run!
@@ -29,7 +28,7 @@ module IOCheck
         t.ready
       end
       namespace "iocheck" do
-        task "update" => @tests.map { |t| t.taskname }
+        task "update" => @tests.map { |t| "iocheck:update:#{t.name}" }
       end
       task "iocheck" do
         run!
@@ -47,4 +46,5 @@ module IOCheck
     end
 
   end # end of class Tester
+
 end # end of module IOCheck

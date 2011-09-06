@@ -5,6 +5,7 @@ module IOCheck
     def initialize
       @result = nil
     end
+    attr_reader :result
 
     # Expected -> Actual -> Either
     def evaluate(expected, actual)
@@ -15,7 +16,7 @@ module IOCheck
       @result = evaluate(expected, actual)
     end
 
-    class Sucess
+    class Success
     end
 
     class Failure
@@ -28,9 +29,9 @@ module IOCheck
     class Either
       def initialize(pred, log)
         if pred
-	  @stat = Success.new
+	  @stat = ::IOCheck::Policy::Success.new
         else
-	  @stat = Failure.new(log)
+	  @stat = ::IOCheck::Policy::Failure.new(log)
         end
       end
       def evaluate
@@ -55,4 +56,5 @@ module IOCheck
 	"Bytes not exactly matched").evaluate
     end
   end # end of class Policy
+
 end # end of module IOCheck 
