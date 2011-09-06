@@ -50,11 +50,14 @@ module IOCheck
       end
     end
 
-    Bytes = Block.new do |actual, expected|
-      Either.new(
-        actual.bytes == expected.bytes,
-	"Bytes not exactly matched").evaluate
+    def self.by_bytes
+      Block.new do |actual, expected|
+        Either.new(
+          actual.bytes == expected.bytes,
+  	  "Bytes not exactly matched").evaluate
+      end
     end
+
   end # end of class Policy
 
 end # end of module IOCheck 

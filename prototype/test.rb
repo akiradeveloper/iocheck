@@ -43,7 +43,7 @@ module IOCheck
 
     def initialize(cmdname)
       @command = Command.new(cmdname)
-      @policies = [Policy::Bytes]
+      @policies = [Policy.by_bytes]
       @repeat = 1
       @desc = ""
     end
