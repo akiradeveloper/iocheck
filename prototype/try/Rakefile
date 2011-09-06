@@ -1,0 +1,5 @@
+s = "akira"
+
+task :p do |t|
+  p s.size
+end

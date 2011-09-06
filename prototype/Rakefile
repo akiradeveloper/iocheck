@@ -2,7 +2,7 @@ require_relative "iocheck"
 
 tester = IOCheck::Tester.new
 
-tester << "tree"
-tester << IOCheck::Unit.new( name="lstest", exe="ls", IOCheck::Judge.new )
+tester << IOCheck::Test.new("tree")
+tester << IOCheck::Test.new("main").repeat(10).name("prod of 1 to 10").describe("multiply 1 to 10")
 
 tester.ready
