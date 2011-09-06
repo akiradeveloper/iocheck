@@ -3,15 +3,35 @@ require_relative "policy"
 module IOCheck
 
   def self.name(cmdname)
-    cmdname.split(" ").join
+    cmdname.split(" ").join("_")
   end
 
   def self.strip(bytes)
     bytes.strip
   end
 
+  def self.filename(name)
+    dir = ::IOCheck::Env["dir"]
+    if self.include?(name, "#{dir}/lock") 
+      x = "#{dir}/lock/#{name}"
+    elsif self.include?(name, "#{dir}/unlock")
+      x = "#{dir}/unlock/#{name}"
+    else
+      raise ArgumentError
+    end
+    x
+  end
+
+  def self.include?(name, dir)
+    Dir.open(dir).each do |f|
+      return true if f == name
+    end   
+      return false
+    end
+  end
+
   class Test
-  
+
     def initialize(cmdname)
       @command = Command.new(cmdname)
       @policies = [Policy::Bytes]
@@ -28,57 +48,74 @@ module IOCheck
       @desc = desc
       self
     end
-      
-    def <<(policy)
+
+    def by(policy)
       @policies << policy
+      self
+    end
+
+    def update!
+      @command.run!
+      bytes = @command.actual.bytes
+      filename = IOCheck.filename(name)
+      f = File.open(filename)
+      f.write(bytes)
+      f.close
     end
   
     def name
-      IOCheck.name( @command.name )
+      IOCheck.name( @command.cmdname )
+    end
+
+    def taskname
+      "iocheck:" + name
     end
   
     def run!
-      @command.run!(@repeat)
+      @command.run!
       @policies.each do |p|
         p.run!( @command.actual, expected )
       end
+      show
     end
 
     def ready
       RakeTask.new(self).create_tasks
     end
   
+    def show
+      puts "test.show"
+      n_success = 0
+      n_failure = 0
+      log = []
+      @policies.each do |p|
+        if p.result.class == Success
+	  n_success += 1
+	elsif p.result.class == Failure
+	  n_failure += 1k
+	  log << p.result.log
+        else
+	  raise Error
+        end
+       end
+       puts "Testname : #{name}"
+       puts "Minor Success : #{n_success}"
+       puts "Minor Failure : #{n_failure}"
+       puts "Log"
+       puts log.join("\n")
+    end
+
   private
     def expected
       Expected.new(self)
     end
 
-    class RakeTask
-      def initialize(test)
-        @test = test
-      end
-      def create_tasks
-        create_update_task
-	create_run_task
-      end
-      def create_update_task
-        namespace "iocheck" do
-	  test.update
-	end
-      end
-      def craete_run_task
-        namespace "iocheck" do
-	  test.run!
-	  test.show
-	end
-      end
-    end
-  
     class Command
       def initialize(cmdname)
         @cmdname = cmdname
         @actual = Actual.new
       end
+      attr_reader :cmdname, :actual
     
       def run!(time)
         time.times do |t|
@@ -86,7 +123,7 @@ module IOCheck
         end
         @actual.times  = time
       end
-  
+
       class Actual
   
         def initialize
@@ -111,21 +148,16 @@ module IOCheck
 	  def run!
 	    @bytes = `#{@cmdname}`
 	  end
-        end
-      end
+        end # end of class Result
+      end # end of class Actual
     end # end of class Command
 
     class Expected
 
       def initialize(test)
         @test = test
-        if include?(name, "#{test.dir}/lock") 
-	  @fname = "#{test.dir}/lock/#{name}"
-        elsif include?(name, "#{test.dir}/unlock")
-	  @fname = "#{test.dir}/unlock/#{name}"
-	else
-	  raise
-        end
+	dir = ::IOCheck::Env["dir"]
+
       end
 
       def repeat
@@ -137,12 +169,28 @@ module IOCheck
       end
 
     private
-      def include?(name, dir)
-        Dir.open(dir).each do |f|
-	  return true if f == name
-	end   
-	return false
+      
+    end # end of class Expected
+
+    class RakeTask
+      def initialize(test)
+        @test = test
       end
-    end
+      def create_tasks
+        create_update_task
+	create_run_task
+      end
+      def create_update_task
+        namespace "iocheck" do
+	  test.update
+	end
+      end
+      def craete_run_task
+        namespace "iocheck" do
+	  test.run!
+	  test.show
+	end
+      end
+    end # end of class RakeTask
   end # end of class Test
 end # end of module IOCheck

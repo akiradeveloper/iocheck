@@ -1,29 +1,47 @@
 module IOCheck
 
-class Tester
+  Env = {}
+  Env["dir"] = "./iocheck"
 
-  def initialize
-    @tests = []
-  end
+  class Tester
   
-  def <<(test)
-    @tests << test
-  end
+    def initialize
+      @tests = []
+    end
+    
+    def <<(test)
+      @tests << test
+      test.tester = self
+    end
+  
+    def run!
+      @tests.each { |t| r.run! }
+    end
 
-  def open
-    system "rake iocheck:open"
-  end
+    def update!
+      @tests.each { |t| r.update! }
+    end
+  
+    def ready
+      @tests.each do |t|
+        t.ready
+      end
+      namespace "iocheck" do
+        task "update" => @tests.map { |t| t.taskname }
+      end
+      task "iocheck" do
+        run!
+	show
+      end
+    end
 
-  def run!
-    @tests.each { |t| r.run! }
-  end
+  private
 
-  def show
-  end
+    def show
+      @tests.each do |t|
+        t.show
+      end
+    end
 
-  def close
-    system "rake iocheck:close"
-  end
-end
-
+  end # end of class Tester
 end # end of module IOCheck

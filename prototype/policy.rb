@@ -6,6 +6,7 @@ module IOCheck
       @result = nil
     end
 
+    # Expected -> Actual -> Either
     def evaluate(expected, actual)
       raise "You must implement this method."
     end
@@ -32,7 +33,7 @@ module IOCheck
 	  @stat = Failure.new(log)
         end
       end
-      def run
+      def evaluate
         @stat
       end
     end
@@ -44,14 +45,14 @@ module IOCheck
       end
   
       def evaluate(expected, actual)
-        @blk.call(expected,actual)
+        @blk.call(expected, actual)
       end
     end
 
     Bytes = Block.new do |actual, expected|
       Either.new(
         actual.bytes == expected.bytes,
-	"Bytes not exactly matched").run
+	"Bytes not exactly matched").evaluate
     end
   end # end of class Policy
 end # end of module IOCheck 

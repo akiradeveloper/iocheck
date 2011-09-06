@@ -1,5 +1,11 @@
-s = "akira"
+str = "akira"
+
+def maketask(s)
 
 task :p do |t|
   p s.size
 end
+
+end
+
+maketask(str)
