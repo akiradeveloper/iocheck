@@ -1,3 +1,5 @@
+require "test"
+
 module IOCheck
 
   Env = {}
@@ -15,11 +17,11 @@ module IOCheck
     end
   
     def run!
-      @tests.each { |t| r.run! }
+      @tests.each { |t| t.run! }
     end
 
     def update!
-      @tests.each { |t| r.update! }
+      @tests.each { |t| t.update! }
     end
   
     def ready
@@ -38,6 +40,7 @@ module IOCheck
   private
 
     def show
+      # TODO: This is a temporal implementation.
       @tests.each do |t|
         t.show
       end

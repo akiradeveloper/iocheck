@@ -10,7 +10,7 @@ module IOCheck
     bytes.strip
   end
 
-  def self.filename(name)
+  def self.readfile(name)
     dir = ::IOCheck::Env["dir"]
     if self.include?(name, "#{dir}/lock") 
       x = "#{dir}/lock/#{name}"
@@ -20,6 +20,10 @@ module IOCheck
       raise ArgumentError
     end
     x
+  end
+
+  def self.writefile(name)
+    "#{dir}/unlock/#{name}"
   end
 
   def self.include?(name, dir)
@@ -55,16 +59,20 @@ module IOCheck
     end
 
     def update!
+      # if the file is in lock dir, do nothing and return.
+      return if ::IOCheck.include?(name, "#{::IOCheck::Env["dir"]}/lock")
+
+      # if not, the file for this test should be updated.
       @command.run!
       bytes = @command.actual.bytes
-      filename = IOCheck.filename(name)
+      filename = ::IOCheck.writefile(name)
       f = File.open(filename)
       f.write(bytes)
       f.close
     end
   
     def name
-      IOCheck.name( @command.cmdname )
+      ::IOCheck.name( @command.cmdname )
     end
 
     def taskname
@@ -76,7 +84,6 @@ module IOCheck
       @policies.each do |p|
         p.run!( @command.actual, expected )
       end
-      show
     end
 
     def ready
@@ -92,20 +99,21 @@ module IOCheck
         if p.result.class == Success
 	  n_success += 1
 	elsif p.result.class == Failure
-	  n_failure += 1k
+	  n_failure += 1
 	  log << p.result.log
         else
 	  raise Error
         end
-       end
-       puts "Testname : #{name}"
-       puts "Minor Success : #{n_success}"
-       puts "Minor Failure : #{n_failure}"
-       puts "Log"
-       puts log.join("\n")
+      end
+      puts "Testname : #{name}"
+      puts "Minor Success : #{n_success}"
+      puts "Minor Failure : #{n_failure}"
+      puts "Log"
+      puts log.join("\n")
     end
 
   private
+
     def expected
       Expected.new(self)
     end
@@ -121,7 +129,7 @@ module IOCheck
         time.times do |t|
           @actual << Actual::Result.new(@cmdname)
         end
-        @actual.times  = time
+        @actual.repeat  = time
       end
 
       class Actual
@@ -136,7 +144,7 @@ module IOCheck
         end
   
         def bytes
-	  IOCheck.strip( @results[0].bytes )
+	  ::IOCheck.strip( @results[0].bytes )
         end
 
         class Result
@@ -146,7 +154,7 @@ module IOCheck
 	  attr_reader :bytes
           
 	  def run!
-	    @bytes = `#{@cmdname}`
+	    @bytes = ::IOCheck.strip(`#{@cmdname}`)
 	  end
         end # end of class Result
       end # end of class Actual
@@ -156,8 +164,6 @@ module IOCheck
 
       def initialize(test)
         @test = test
-	dir = ::IOCheck::Env["dir"]
-
       end
 
       def repeat
@@ -165,11 +171,9 @@ module IOCheck
       end
       
       def bytes
-        IOCheck.strip( `cat #{@fname}` )
+        content = File.read( ::IOCheck.readfile(@test.name) )
+        ::IOCheck.strip( content )
       end
-
-    private
-      
     end # end of class Expected
 
     class RakeTask
@@ -182,7 +186,7 @@ module IOCheck
       end
       def create_update_task
         namespace "iocheck" do
-	  test.update
+	  test.update!
 	end
       end
       def craete_run_task
