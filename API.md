@@ -1,6 +1,19 @@
 # Design and API
 First of all, please visit sample/ and understand what can be done by iocheck.
 
+## Lock and Unlock
+It is very typical for iocheck users to lock the generated standard output to refactor your source code.
+
+iocheck categorizes files in two kinds. One is called "lock" and the another is called "unlock".
+
+Files in lock are never updated, if you do ```rake iocheck:update``` while those in unlock are.
+iocheck prioritizes those in lock, if it finds same files in both lock and unlock,
+it will never update the unlock one and everlastingly use one in lock.
+
+To safely manipulate the files between lock and unlock, iocheck provides ```rake iocheck:lock:hoge``` task
+which locks file named "hoge". If you want to lock all the files at the same time, you can use ```rake iocheck:lock``` task.
+unlock is also given.
+
 ## Policy
 
 ### What is Policy?
