@@ -26,8 +26,10 @@ module IOCheck
         t.ready
       end
       namespace "iocheck" do
+        desc( "update all the tests except locked ones" )
         task "update" => @tests.map { |t| "iocheck:update:#{t.name}" }
       end
+      desc( "run all the tests" )
       task "iocheck" do
         run!
 	show
@@ -41,6 +43,7 @@ module IOCheck
       dir = ::IOCheck::Env["dir"]
 
       namespace "iocheck" do
+        desc( "lock all unlocked files." )
         task "lock" => unlocked.map { |t| "iocheck:lock:#{t.name}" }
         unlocked.each do  |t|
 	  namespace "lock" do
@@ -50,6 +53,7 @@ module IOCheck
             end
 	  end
         end
+        desc( "unlock all locked files." )
 	task "unlock" => locked.map { |t| "iocheck:unlock:#{t.name}" }
 	locked.each do |t|
           namespace "unlock" do
