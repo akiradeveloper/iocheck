@@ -1,35 +1,28 @@
 # README
 README of this sample
 
-First, do
-
+First,
 ```
 make
 ```
 
-Then, do
-
+Then, 
 ```
 rake iocheck:update
 ```
 
 Type
-
 ```
 rake -P
 ```
-or
-
+and
 ```
 tree
 ```
-
 to see what are supported by iocheck.
 
 Finally,
-
-```bash
+```
 rake iocheck
 ```
-
 to see what will be happended.

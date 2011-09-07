@@ -1,6 +1,9 @@
 # Design and API
 First of all, please visit sample/ and understand what can be done by iocheck.
 
+This document explains the design concept of iocheck and
+furthur API to make use of iocheck.
+
 ## Lock and Unlock
 It is very typical for iocheck users to lock the generated standard output to refactor your source code.
 
@@ -37,25 +40,27 @@ class YourPolicy < IOCheck::Policy
     super
   end
   # Expected class and Actual class
+  # Expected -> Actual -> Bool in Haskell notation.
   def evaluate(expected, actual)
-    # returns Bool
+    # returns true or false.
   end
 end
 
 your_policy = YourPolicy.new
 ```
-or use skeltal implementation which must be given block
+
+or use skeltal implementation that you can pass a block
 
 ```ruby
 your_policy = IOCheck::Policy::Block do |expected, actual|
-  # returns Bool
+  # returns true or false.
 end
 ```
 
 and finally,
 
-```
-tester << test.by(yourpolicy).hoge
+```ruby
+tester << test.by(your_policy)
 ```
 
 as in sample/ .
