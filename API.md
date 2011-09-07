@@ -17,6 +17,7 @@ considering the randomness in their generation. This is typical in visualization
 which is usally hard to test by traditional testing framework.
 
 ### Use your original policy functor.
+
 ```ruby
 class YourPolicy < IOCheck::Policy
   def initialize
@@ -31,15 +32,19 @@ end
 your_policy = YourPolicy.new
 ```
 or use skeltal implementation which must be given block
-```
+
+```ruby
 your_policy = IOCheck::Policy::Block do |expected, actual|
   # returns Bool
 end
 ```
+
 and finally,
+
 ```
 tester << test.by(yourpolicy).hoge
 ```
+
 as in sample/ .
 
 ## Configurations
@@ -47,6 +52,7 @@ as in sample/ .
 ### Change the directory for iocheck files.
 If you want to use other directory instead of iocheck/.  
 This is typically useful if the directory is tempfs in some other location.
+
 ```ruby
 yourdir = "/mnt/tempfs"
 IOCheck::Env["dir"] = yourdir
