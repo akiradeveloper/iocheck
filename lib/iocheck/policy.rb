@@ -6,7 +6,7 @@ module IOCheck
     end
     attr_reader :result
 
-    # Expected -> Actual -> Either
+    # Expected -> Actual -> Success or Failure
     def evaluate( test )
       raise NoMethodError, "You must override this method."
     end

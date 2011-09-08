@@ -22,7 +22,7 @@ without any learning cost.
 ## Installation
 iocheck can be installed from rubygems repository, just type
 
-```bash
+```
 gem install iocheck
 ```
 
@@ -36,6 +36,5 @@ gem install iocheck
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
 ## Copyright
-Copyright (c) 2011 Akira Hayakawa (@akiradeveloper). See LICENSE.txt for
-further details.
-
+Copyright (c) 2011 Akira Hayakawa (@akiradeveloper).   
+See LICENSE.txt for further details.

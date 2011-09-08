@@ -39,10 +39,8 @@ class YourPolicy < IOCheck::Policy
   def initialize
     super
   end
-  # Expected class and Actual class
-  # Expected -> Actual -> Either in Haskell notation.
-  def evaluate(expected, actual)
-    # returns IOCheck::Policy::Either
+  def evaluate( test )
+    # IOCheck::Policy::Success or IOCheck::Policy::Failure
   end
 end
 
@@ -52,8 +50,8 @@ your_policy = YourPolicy.new
 or use skeltal implementation that you can pass a block
 
 ```ruby
-your_policy = IOCheck::Policy::Block do |expected, actual|
-  # returns IOCheck::Policy::Either
+your_policy = IOCheck::Policy::Block do |test|
+  # IOCheck::Policy::Success or IOCheck::Policy::Failure
 end
 ```
 
@@ -72,6 +70,6 @@ If you want to use other directory instead of iocheck/.
 This is typically useful if the directory is tempfs in some other location.
 
 ```ruby
-yourdir = "/mnt/tempfs"
-IOCheck::Env["dir"] = yourdir
+your_dir = "/mnt/tempfs"
+IOCheck::Env["dir"] = your_dir
 ```
