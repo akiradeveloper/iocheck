@@ -40,9 +40,9 @@ class YourPolicy < IOCheck::Policy
     super
   end
   # Expected class and Actual class
-  # Expected -> Actual -> Bool in Haskell notation.
+  # Expected -> Actual -> Either in Haskell notation.
   def evaluate(expected, actual)
-    # returns true or false.
+    # returns IOCheck::Policy::Either
   end
 end
 
@@ -53,7 +53,7 @@ or use skeltal implementation that you can pass a block
 
 ```ruby
 your_policy = IOCheck::Policy::Block do |expected, actual|
-  # returns true or false.
+  # returns IOCheck::Policy::Either
 end
 ```
 
