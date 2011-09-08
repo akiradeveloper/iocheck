@@ -40,9 +40,11 @@ module IOCheck
   end
 
   class Test
+    
     def initialize(cmd)
       @command = Command.new(cmd)
-      @policies = [Policy.by_bytes]
+      @policies = []
+      @policies << Policy.by_bytes
       @repeat = 1
       @desc = ""
     end
@@ -86,7 +88,7 @@ module IOCheck
     def run!
       do_run!
       @policies.each do |p|
-        p.run!( expected, @command.actual )
+        p.run!( self )
       end
     end
 
@@ -116,12 +118,17 @@ module IOCheck
       puts log.join("\n")
     end
 
-  private
-
     def expected
       Expected.new(self)
     end
 
+    def actual
+      @command.actual
+    end
+
+    attr_reader :command
+
+  private
     class Command
       def initialize(cmd)
         @cmd = cmd

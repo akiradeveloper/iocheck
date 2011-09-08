@@ -7,12 +7,12 @@ module IOCheck
     attr_reader :result
 
     # Expected -> Actual -> Either
-    def evaluate(expected, actual)
+    def evaluate( test )
       raise NoMethodError, "You must override this method."
     end
 
-    def run!(expected, actual)
-      @result = evaluate(expected, actual)
+    def run!( test )
+      @result = evaluate( test )
     end
 
     class Success
@@ -44,17 +44,17 @@ module IOCheck
         @blk = blk
       end
   
-      def evaluate(expected, actual)
-        @blk.call(expected, actual)
+      def evaluate( test )
+        @blk.call( test )
       end
     end
 
     def self.by_bytes
-      Block.new do |expected, actual|
+      Block.new do |test|
         # TODO: Better to show the diff to the user.
         Either.new(
-          actual.bytes == expected.bytes,
-  	  "Bytes not exactly matched").evaluate
+          test.actual.bytes == test.expected.bytes,
+  	  "Bytes not exactly matched : #{test}").evaluate
       end
     end
   end # end of class Policy
