@@ -25,19 +25,6 @@ module IOCheck
       attr_reader :log 
     end
 
-    class Either
-      def initialize(pred, log)
-        if pred
-	  @stat = ::IOCheck::Policy::Success.new
-        else
-	  @stat = ::IOCheck::Policy::Failure.new(log)
-        end
-      end
-      def evaluate
-        @stat
-      end
-    end
-
     class Block < Policy
       def initialize(&blk)
         super
@@ -49,13 +36,29 @@ module IOCheck
       end
     end
 
+    def self.succeed_if( pred, log )
+      if pred
+        return Success.new
+      else
+        return Failure.new(log)
+      end
+    end
+
     def self.by_bytes
       Block.new do |test|
         # TODO: Better to show the diff to the user.
-        Either.new(
-          test.actual.bytes == test.expected.bytes,
-  	  "Bytes not exactly matched : #{test}").evaluate
+	succeed_if(
+	  test.actual.bytes == test.expected.bytes,
+          by_bytes_log( test ))
       end
+    end
+
+    def self.by_bytes_log( test )
+      "Bytes not exactly matched.\n" +
+      "--------------------------\n" +
+      "expected :\n#{test.expected.bytes}\n" +
+      "--------------------------\n" +
+      "actual   :\n#{test.actual.bytes}" 
     end
   end # end of class Policy
 end # end of module IOCheck 

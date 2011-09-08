@@ -68,11 +68,27 @@ module IOCheck
 
   private
     def show
-      # TODO: This is a temporary implementation.
       @tests.each do |t|
         t.show
       end
-      # TODO: Here, summary result should be written.
+      puts
+      show_overall
+    end
+
+    def show_overall
+      n_success = 0
+      n_failure = 0
+      @tests.each do |t|
+        if t.succeeded?   
+          n_success += 1
+        else
+	  n_failure += 1
+        end
+      end
+      puts "--------------"
+      puts "Overall Result"
+      puts "Success : #{n_success}"
+      puts "Failure : #{n_failure}"
     end
   end # end of class Tester
 end # end of module IOCheck

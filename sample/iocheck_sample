@@ -1,0 +1,47 @@
+Command       : ./main
+Description   : multiply 1 to 10
+Minor Success : 1
+Minor Failure : 0
+# Log --------:
+
+Command       : tree
+Description   : 
+Minor Success : 0
+Minor Failure : 1
+# Log --------:
+Bytes not exactly matched.
+--------------------------
+expected :
+.
+|-- Makefile
+|-- README.md
+|-- Rakefile
+|-- iocheck
+|   |-- lock
+|   `-- unlock
+|       `-- dotslashmain
+|-- main
+`-- main.c
+
+3 directories, 6 files
+--------------------------
+actual   :
+.
+|-- Makefile
+|-- README.md
+|-- Rakefile
+|-- iocheck
+|   |-- lock
+|   `-- unlock
+|       |-- dotslashmain
+|       `-- tree
+|-- iocheck_sample
+|-- main
+`-- main.c
+
+3 directories, 8 files
+
+--------------
+Overall Result
+Success : 1
+Failure : 1

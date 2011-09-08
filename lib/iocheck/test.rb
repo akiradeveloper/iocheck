@@ -95,6 +95,14 @@ module IOCheck
     def ready
       RakeTask.new(self).create_tasks
     end
+
+    # Regard as success iff all the minor tests were end in success.
+    def succeeded?
+      @policies.each do |p|
+        return false if p.result.class == ::IOCheck::Policy::Failure
+      end
+      return true
+    end
   
     def show
       n_success = 0
@@ -110,7 +118,7 @@ module IOCheck
 	  raise Error
         end
       end
-      puts "Test Name     : #{name}"
+      puts "Command       : #{@command.cmd}"
       puts "Description   : #{@desc}"
       puts "Minor Success : #{n_success}"
       puts "Minor Failure : #{n_failure}"
